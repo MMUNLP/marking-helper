@@ -36,13 +36,23 @@ def match_name_list(csv_file,input_feedback_path):
     df = pd.read_csv(csv_file)
     student_names = df['Surname/Name'].tolist()
     student_names = [reverse_name(s) for s in student_names]
-    if len(glob(input_feedback_path+'/'+f'*.docx'))==len(student_names) or\
-        len(glob(input_feedback_path+'/'+f'*.pdf'))==len(student_names):
-        return True
+    docxs = glob(input_feedback_path+'/'+f'*.docx')
+    pdfs = glob(input_feedback_path+'/'+f'*.pdf')
+    if len(docxs)==len(student_names) or\
+        len(pdfs)==len(student_names):
+        count= 0
+        for student_name in student_names:
+            if any([True if student_name in f else False for f in docxs])==True or\
+                any([True if student_name in f else False for f in pdfs])==True:
+                count+=1
+        if count == len(pdfs) or count ==len(docxs):
+            return True
+        else:
+            return False
     else:
         return False
     pass
-
+	
 def get_names_ids(path=graded_file):
     df = pd.read_csv(path)
     submission_ids = df['Submission id'].tolist()
@@ -87,11 +97,15 @@ def generate_feedbacks_for_upload(input_grade_file=graded_file,
 
 
 def reverse_name(string):
-    s = string.split()[::-1]
-    l = []
-    for i in s:
-        # appending reversed words to l
-        l.append(i)
+    # s = string.split()[::-1]
+    # l = []
+    # for i in s:
+    #     # appending reversed words to l
+    #     l.append(i)
+    s = string.split()
+    l = [i for i in s[1:]]
+    l.append(s[0])
+    # print(l)
     return " ".join(l)
 
 def zip_all_feedbacks(input_path=PDF_FOLDER_NAME,output_path=output_path):
